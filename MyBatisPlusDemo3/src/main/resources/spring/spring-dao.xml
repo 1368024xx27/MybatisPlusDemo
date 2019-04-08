@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--加载数据源-->
+    <context:property-placeholder location="classpath:properties/*.properties"/>
+
+	<!-- 配置数据库连接池 -->
+	<bean id="dataSource"
+		class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="maxActive" value="10" />
+		<property name="minIdle" value="5" />
+	</bean>
+
+    <!--sqlSessionFactory-->
+    <bean id="sqlSessionFactory" class="com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean">
+        <!--数据源-->
+        <property name="dataSource" ref="dataSource"/>
+        <!--mybatis-plus全局配置-->
+        <property name="globalConfig" ref="globalConfig"/>
+        <!--mybatis配置文件的位置-->
+        <!--<property name="configuration" value="classpath:mybatis/mybatis-config.xml"/>-->
+        <!--扫描mapper.xml文件-->
+        <!--<property name="mapperLocations" value="classpath:com/vrain/mapper/xml/*.xml"/>-->
+        <!--加载插件-->
+        <property name="plugins">
+            <array>
+                <bean class="com.baomidou.mybatisplus.extension.plugins.PerformanceInterceptor"></bean>
+                <!--分页插件-->
+                <bean class="com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor"></bean>
+                <!--执行分析插件-->
+                <bean class="com.baomidou.mybatisplus.extension.plugins.SqlExplainInterceptor">
+                </bean>
+                <!--性能分析插件（生产环境不建议使用）-->
+                <bean class="com.baomidou.mybatisplus.extension.plugins.PerformanceInterceptor">
+                    <!--sql语句执行时间-->
+                    <property name="maxTime" value="100"/>
+                    <!--格式化输出sql语句-->
+                    <property name="format" value="true"/>
+                </bean>
+                <!---->
+                <bean class="com.baomidou.mybatisplus.extension.plugins.OptimisticLockerInterceptor"></bean>
+            </array>
+        </property>
+    </bean>
+
+    <!--mybatis-plus全局配置-->
+    <bean id="globalConfig" class="com.baomidou.mybatisplus.core.config.GlobalConfig">
+        <property name="dbConfig" ref="dbConfig"/>
+    </bean>
+
+    <!--数据库配置-->
+    <bean id="dbConfig" class="com.baomidou.mybatisplus.core.config.GlobalConfig.DbConfig">
+        <!--表名前缀-->
+        <property name="tablePrefix" value="tb_"/>
+        <!--数据库类型-->
+        <property name="dbType" value="MYSQL"/>
+        <!--主键类型-->
+        <property name="idType" value="AUTO"/>
+        <!--表名、字段名是否使用下划线命名（默认 true:默认数据库表下划线命名）-->
+        <property name="tableUnderline" value="true"/>
+        <!--主键生成策略-->
+        <property name="keyGenerator" ref="keyGenerator"/>
+    </bean>
+
+    <!--主键生成策略-->
+    <bean id="keyGenerator" class="com.baomidou.mybatisplus.extension.incrementer.H2KeyGenerator"/>
+
+    <!--扫描mapper接口位置-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.vrain.mapper"/>
+    </bean>
+
+</beans>
